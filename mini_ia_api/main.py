@@ -6,6 +6,7 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 import psycopg2
+from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -19,14 +20,16 @@ from database import (
 )
 from text import normalizar, tokenizar
 
+load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent
 MODELO = BASE_DIR / "modelo_rede.npz"
 
-DB_HOST = "localhost"
-DB_PORT = 5432
-DB_NAME = "estoque"
-DB_USER = "admin"
-DB_PASSWORD = "admin"
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = int(os.getenv("DB_PORT", "5432"))
+DB_NAME = os.getenv("DB_NAME", "estoque")
+DB_USER = os.getenv("DB_USER", "admin")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "admin")
 
 app = FastAPI(title="Mini IA — API local")
 
@@ -376,3 +379,9 @@ def chat(notebook_id: UUID, req: PerguntaRequest):
         "produto": produto,
         "fontes": [produto] if produto else [],
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "8000")))

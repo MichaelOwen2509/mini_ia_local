@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: mini_ia_db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-estoque}
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-admin}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-admin} -d ${DB_NAME:-estoque}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    expose:
+      - "5432"
+
+  api:
+    build: ./mini_ia_api
+    container_name: mini_ia_api
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-estoque}
+      DB_USER: ${DB_USER:-admin}
+      DB_PASSWORD: ${DB_PASSWORD:-admin}
+      PORT: "8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./mini_ia_api/modelo_rede.npz:/app/modelo_rede.npz
+
+  web:
+    build:
+      context: ./mini_ia_web
+      args:
+        VITE_API_URL: http://localhost:${API_PORT:-8000}
+    container_name: mini_ia_web
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-5173}:80"
+
+volumes:
+  pgdata:

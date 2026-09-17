@@ -3,13 +3,16 @@ from pathlib import Path
 
 import pandas as pd
 import psycopg2
+from dotenv import load_dotenv
 
-DB_HOST = "localhost"
-DB_PORT = 5432
-DB_NAME = "estoque"
-DB_USER = "admin"
-DB_PASSWORD = "admin"
-ARQUIVO_EXCEL = "Planilha1.xlsx"
+load_dotenv()
+
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = int(os.getenv("DB_PORT", "5432"))
+DB_NAME = os.getenv("DB_NAME", "estoque")
+DB_USER = os.getenv("DB_USER", "admin")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "admin")
+ARQUIVO_EXCEL = os.getenv("ARQUIVO_EXCEL", "Planilha1.xlsx")
 
 COLUNAS = [
     "Nome_Item", "Categoria", "Quantidade", "Preco_Unitario",
